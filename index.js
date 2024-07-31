@@ -41,12 +41,11 @@ async function fetchChannels() {
       if (subscribers >= minSubscribers && subscribers <= maxSubscribers) {
         const formattedChannel = {
           title: channel.snippet.title,
-          description: channel.snippet.description,
           customUrl: `https://youtube/${channel.snippet.customUrl}`,
           country: channel.snippet.country,
-          viewCount: channel.statistics.viewCount,
           subscriberCount: channel.statistics.subscriberCount,
           videoCount: channel.statistics.videoCount,
+          viewCount: channel.statistics.viewCount,
         };
         filteredChannels.push(formattedChannel);
       }
