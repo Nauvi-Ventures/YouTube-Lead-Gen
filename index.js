@@ -3,7 +3,7 @@ import axios from "axios";
 
 const apiKey = process.env.API_KEY;
 const sheetUrl = process.env.SHEET_URL;
-const maxResults = 10;
+const maxResults = 50;
 const minSubscribers = 50000;
 const maxSubscribers = 250000;
 
@@ -71,13 +71,28 @@ async function postChannels(channels) {
     console.log("Filtered Channels posted successfully.");
   } catch (error) {
     console.error("Error posting channels:", error);
+    throw error;
   }
 }
 
-fetchChannels()
-  .then((channels) => {
-    return postChannels(channels);
-  })
-  .catch((error) => {
-    console.error("Error fetching channels:", error);
-  });
+(async function main() {
+  let totalLeads = 0;
+  const startTime = Date.now();
+
+  while (true) {
+    try {
+      const channels = await fetchChannels();
+      await postChannels(channels);
+      totalLeads += channels.length;
+    } catch (error) {
+      console.error("An error occurred, stopping the loop:", error);
+      break;
+    }
+  }
+
+  const endTime = Date.now();
+  const timeTaken = (endTime - startTime) / 1000;
+
+  console.log(`Total leads generated: ${totalLeads}`);
+  console.log(`Time taken: ${timeTaken} seconds`);
+})();
