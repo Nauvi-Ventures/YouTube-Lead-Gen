@@ -1,15 +1,39 @@
 import "dotenv/config";
 import axios from "axios";
+import fs from "fs/promises";
 
 const apiKey = process.env.API_KEY;
 const sheetUrl = process.env.SHEET_URL;
 const maxResults = 50;
 const minSubscribers = 50000;
 const maxSubscribers = 250000;
+const tokenFilePath = "./nextPageToken.txt";
+
+async function readNextPageToken() {
+  try {
+    const data = await fs.readFile(tokenFilePath, "utf-8");
+    return data.trim();
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return "";
+    } else {
+      throw error;
+    }
+  }
+}
+
+async function writeNextPageToken(token) {
+  try {
+    await fs.writeFile(tokenFilePath, token, "utf-8");
+  } catch (error) {
+    console.error("Error writing nextPageToken:", error);
+    throw error;
+  }
+}
 
 async function fetchChannels() {
   let channelIds = new Set();
-  let nextPageToken = "";
+  let nextPageToken = await readNextPageToken();
   const region = "US";
   const relevanceLanguage = "en";
 
@@ -23,6 +47,7 @@ async function fetchChannels() {
     });
 
     nextPageToken = searchData.nextPageToken;
+    await writeNextPageToken(nextPageToken);
   } while (nextPageToken);
 
   const channelIdArray = Array.from(channelIds);
